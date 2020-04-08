@@ -924,5 +924,3 @@ WedoBoostPoweredUp.prototype.getUuidFromInput = function (input) {
 };
 
 module.exports = WedoBoostPoweredUp;
-var WeDo2 = WedoBoostPoweredUp;
-module.exports = WeDo2;
