@@ -457,7 +457,7 @@ if(thisDeviceType === "wedo") {
 					let AbsolutDegree = data[4] | (data[5]<<8) | (data[6]<<16) | (data[7]<<24);
 					let fullRotation = AbsolutDegree % 360;
 					let rotationCount = ~~(AbsolutDegree / 360);
-					this.wedoBoostPoweredUp[uuid].port[thisPort.byte].motorRotation = {rotationAngle: fullRotation, rotationCount: rotationCount}
+					this.wedoBoostPoweredUp[uuid].port[thisPort.byte].motorRotation = {rotationAngle: fullRotation, rotationCount: rotationCount, absoluteDeg: AbsolutDegree}
 					this.emit('motor', this.wedoBoostPoweredUp[uuid].port[thisPort.byte].motorRotation, thisPort.byte, uuid);
 				} else {
 
