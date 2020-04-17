@@ -2,6 +2,7 @@
 
 This is a node.js module for the Lego WeDo 2.0 and Lego Boost set.
 
++ Version 2.0.4 fixes
 + Version 2.0.2 Renamed library. If you used ```wedo2``` before, just change the require from ````wedo2```` to  ```wedoboostpoweredup```.
 + Version 2.0.0 Supports the Lego Boost and other Lego connected Hub devices additionally to the wedo2.
 + Version 1.6.x For compatibility, this version switched dependencies from noble to abandonware/noble.
@@ -127,7 +128,7 @@ If a tacho Motor is connected, it will emit exact rotation angles and rotation c
 
 ~~~~js
 hub.on('motor', function (motorRotation, port, uuid) {
-    console.log('rotation angle: '+ motorRotation.rotationAngle +', rotation count: '+ motorRotation.rotationCount + ' at port '+port + ' @ '+uuid);
+    console.log('rotation angle: '+ motorRotation.rotationAngle +', rotation count: '+ motorRotation.rotationCount+', absolute degree: motorRotation.absoluteDeg'+ motorRotation.rotationCount + ' at port '+port + ' @ '+uuid);
 });
 ~~~~
 
