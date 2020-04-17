@@ -2,7 +2,7 @@
 
 This is a node.js module for the Lego WeDo 2.0 and Lego Boost set.
 
-+ Version 2.0.1 Renamed library. If you used ```wedo2``` before, just change the require from ````wedo2```` to  ```wedoboostpoweredup```.
++ Version 2.0.2 Renamed library. If you used ```wedo2``` before, just change the require from ````wedo2```` to  ```wedoboostpoweredup```.
 + Version 2.0.0 Supports the Lego Boost and other Lego connected Hub devices additionally to the wedo2.
 + Version 1.6.x For compatibility, this version switched dependencies from noble to abandonware/noble.
 + Version 1.5.6 has a new initialization method, to support the name search.
@@ -22,16 +22,16 @@ npm install wedoboostpoweredup
 Once the wedo2 module is loaded, the module starts searching for devices (Wedo2 and Boost)
 
 ~~~~js
-var WedoBoostPoweredUp = require('wedoboostpoweredup');
-var wedoBoostPoweredUp = new WedoBoostPoweredUp();
+var Hub = require('wedoboostpoweredup');
+var hub = new Hub();
 ~~~~
 
 If you want to search for a specific range of devices, you can add parts of their names as argument.
 The following example will search for devices that all have "lego" as part of their name.
 
 ~~~~js
-var WedoBoostPoweredUp = require('wedoboostpoweredup');
-var wedoBoostPoweredUp = new WedoBoostPoweredUp("lego");
+var Hub = require('wedoboostpoweredup');
+var hub = new Hub("lego");
 ~~~~
 
 #### Additional initialization parameter for Boost only
@@ -39,21 +39,9 @@ Boost allows setting the interval time between each sensor reading. It defines h
 
 ~~~~js
 var interval = 5;
-var WedoBoostPoweredUp = require('wedoboostpoweredup');
-var wedoBoostPoweredUp = new WedoBoostPoweredUp("lego", interval);
+var Hub = require('wedoboostpoweredup');
+var hub = new Hub("lego", interval);
 ~~~~
-
-#### Backward compatiblity with wedo2 module
-
-Just switch the required library. Anything else still works.
-
-~~~~shell
-var Wedo2 = require('wedoboostpoweredup');
-...
-~~~~
-
-
-
 
 #### Events
 
@@ -63,7 +51,7 @@ The uuid is always the last argument.
 If a new device is connected, it emits the "connected" event.
 
 ~~~~js
-wedoBoostPoweredUp.on('connected', function (uuid) {
+hub.on('connected', function (uuid) {
     console.log('I found a device with uuid: '+uuid);
     // Place getters and setters in here, to make sure that they are called,
     // when the object is connectged
@@ -73,7 +61,7 @@ wedoBoostPoweredUp.on('connected', function (uuid) {
 If a new device is disconnected, it emits the "connected" event.
 
 ~~~~js
-wedoBoostPoweredUp.on('disconnected', function (uuid) {
+hub.on('disconnected', function (uuid) {
     console.log('I removed a device with uuid: '+uuid);
 });
 ~~~~
@@ -81,7 +69,7 @@ wedoBoostPoweredUp.on('disconnected', function (uuid) {
 Battery status in %. uuid tells on which device the status was emitted.
 
 ~~~~js
-wedoBoostPoweredUp.on('battery', function (status, uuid) {
+hub.on('battery', function (status, uuid) {
     console.log('Battery: ' + status + '% @ '+uuid);
 });
 ~~~~
@@ -90,7 +78,7 @@ If a distance sensor is connected, it will send its
 distance in the range of 0 and 10 (matching cm-scale) as well the port.
 
 ~~~~js
-wedoBoostPoweredUp.on('distanceSensor', function (distance, port, uuid) {
+hub.on('distanceSensor', function (distance, port, uuid) {
     console.log('distanceSensor: '+distance+' at port '+port + ' @ '+uuid);
 });
 ~~~~
@@ -99,7 +87,7 @@ If a tilt sensor is connected, it will send its
 tilt x and y in the range of -45 and 45 as well the port.
 
 ~~~~js
-wedoBoostPoweredUp.on('tiltSensor', function (x,y, port, uuid) {
+hub.on('tiltSensor', function (x,y, port, uuid) {
     console.log('tilt sensor: '+x+'   '+y+' at port '+port +' @ '+uuid);
 });
 ~~~~
@@ -107,7 +95,7 @@ wedoBoostPoweredUp.on('tiltSensor', function (x,y, port, uuid) {
 If the device button on the controller is clicked, the following event is fired.
 
 ~~~~js
-wedoBoostPoweredUp.on('button', function (button, uuid) {
+hub.on('button', function (button, uuid) {
     console.log('button state: '+button + ' @ '+ uuid );
 });
 ~~~~
@@ -115,7 +103,7 @@ wedoBoostPoweredUp.on('button', function (button, uuid) {
 Every time a sensor or motor is connected and disconnected, the port event is fired.
 
 ~~~~js
-wedoBoostPoweredUp.on('port', function (port, connected, type, uuid) {
+hub.on('port', function (port, connected, type, uuid) {
     if(connected){
         console.log('Found '+type+' on port '+port+ ' @ '+ uuid );
     } else {
@@ -129,7 +117,7 @@ wedoBoostPoweredUp.on('port', function (port, connected, type, uuid) {
 If the color vision sensor is connected, it will send RGB values representing the color luminance as well as the port.
 
 ~~~~js
-wedoBoostPoweredUp.on('visionSensor', function (colorLuminance, port, uuid) {
+hub.on('visionSensor', function (colorLuminance, port, uuid) {
     console.log('Red: '+ colorLuminance.r+', Green: '+ colorLuminance.g+', Blue: '+ colorLuminance.b+' at port '+port + ' @ '+uuid);
 });
 ~~~~
@@ -138,7 +126,7 @@ wedoBoostPoweredUp.on('visionSensor', function (colorLuminance, port, uuid) {
 If a tacho Motor is connected, it will emit exact rotation angles and rotation counts. The Boost set has two internal ports with two internal tacho Motors.
 
 ~~~~js
-wedoBoostPoweredUp.on('motor', function (motorRotation, port, uuid) {
+hub.on('motor', function (motorRotation, port, uuid) {
     console.log('rotation angle: '+ motorRotation.rotationAngle +', rotation count: '+ motorRotation.rotationCount + ' at port '+port + ' @ '+uuid);
 });
 ~~~~
@@ -155,7 +143,7 @@ If you use more then one device, you can reach the specific device via the uuid 
 Set the name of your device within the device. This name will be saved in your device until you rename it again. In case you use more than one device, this a good place to define names to differentiate specific devices.
 
 ~~~~js
-wedoBoostPoweredUp.setDeviceName(yourName, (optional) uuid);
+hub.setDeviceName(yourName, (optional) uuid);
 ~~~~
 
 Set the Led color of the device controller to an RGB value.
@@ -163,7 +151,7 @@ Each value is on the scale from 0-255.
 For example Red, Green Blue all set to 255 is white:
 
 ~~~~js
-wedoBoostPoweredUp.setLedColor(r,g,b, (optional) uuid);
+hub.setLedColor(r,g,b, (optional) uuid);
 ~~~~
 
 Set the motor speed, if a motor is connected.<br>
@@ -172,7 +160,7 @@ you can add the port number (1 or 2) after the speed.
 Set the port to ```null``` to leave it blank in case you want to set the device.
 
 ~~~~js
-wedoBoostPoweredUp.setMotor(speed, (optionl) port, (optional) uuid);
+hub.setMotor(speed, (optionl) port, (optional) uuid);
 ~~~~
 
 Play a sound on the build-in piezo speaker.
@@ -180,7 +168,7 @@ The frequency of the sound is in kHz, and the length is in ms. **[wedo only]**
 
 
 ~~~~js
-wedoBoostPoweredUp.setSound(frequency, length, (optional) uuid)
+hub.setSound(frequency, length, (optional) uuid)
 ~~~~
 
 
@@ -191,7 +179,7 @@ If you work with more then one device, you have the same uuid choices (nothing, 
 To get the name of your device.
 
 ~~~~js
-wedoBoostPoweredUp.getDeviceName(function(name, uuid){
+hub.getDeviceName(function(name, uuid){
     console.log("the device name is "+name+" @ "+uuid);
 }, uuid);
 ~~~~
@@ -199,7 +187,7 @@ wedoBoostPoweredUp.getDeviceName(function(name, uuid){
 Get the Signal strength of the device Bluetooth LE.
 
 ~~~~js
-wedoBoostPoweredUp.getSignalStrength(function (err, signal, uuid) {
+hub.getSignalStrength(function (err, signal, uuid) {
     console.log('Signal: ' + signal + 'dBm'+ " @ "+uuid);
 }, uuid);
 ~~~~
@@ -207,7 +195,7 @@ wedoBoostPoweredUp.getSignalStrength(function (err, signal, uuid) {
 Get and list all ports that have devices connected.
 
 ~~~~js
-wedoBoostPoweredUp.getPortList(function (portlist, uuid) {
+hub.getPortList(function (portlist, uuid) {
     console.log(JSON.stringify(portlist));
 }, uuid);
 ~~~~
@@ -217,21 +205,21 @@ wedoBoostPoweredUp.getPortList(function (portlist, uuid) {
 Each device is saved in an object reachable via:
 
 ~~~~js
-wedoBoostPoweredUp.wedoBoostPoweredUp
+hub.wedoBoostPoweredUp
 ~~~~
 
 In this object, new devices are saved with their uuid as key for the time that they are connected.
 If you know the uuid of your device, you can test its connection like so:
 
 ~~~~js
-if(wedoBoostPoweredUp.wedoBoostPoweredUp[uuid])
+if(hub.wedoBoostPoweredUp[uuid])
 ~~~~
 
 If you only know the name of the device or just a number in which order it was discovered (the first device will always have the number 0),
 then you can obtain the uuid with the following function. If no device uuid has been found, the response will be ```null``
 
 ~~~~js
-var uuid = wedoBoostPoweredUp.getUuidFromInput(input)
+var uuid = hub.getUuidFromInput(input)
 ~~~~
 
 Once you know that it is connected, you can read all kinds of stuff:
@@ -239,13 +227,13 @@ Once you know that it is connected, you can read all kinds of stuff:
 Name
 
 ~~~~js
-wedoBoostPoweredUp.wedoBoostPoweredUp[uuid].name
+hub.wedoBoostPoweredUp[uuid].name
 ~~~~
 
 Type of connected items on ports
 
 ~~~~js
-wedoBoostPoweredUp.wedoBoostPoweredUp[uuid].port[1].type
+hub.wedoBoostPoweredUp[uuid].port[1].type
 ~~~~
 
 And so on.
