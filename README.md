@@ -2,6 +2,7 @@
 
 This is a node.js module for the Lego WeDo 2.0 and Lego Boost set.
 
++ Version 2.1.0 You can now set exact motor degrees for Boost via ```setMotorDegrees```.
 + Version 2.0.2 Renamed library. If you used ```wedo2``` before, just change the require from ````wedo2```` to  ```wedoboostpoweredup```.
 + Version 2.0.0 Supports the Lego Boost and other Lego connected Hub devices additionally to the wedo2.
 + Version 1.6.x For compatibility, this version switched dependencies from noble to abandonware/noble.
@@ -163,8 +164,15 @@ Set the port to ```null``` to leave it blank in case you want to set the device.
 hub.setMotor(speed, (optionl) port, (optional) uuid);
 ~~~~
 
-Play a sound on the build-in piezo speaker.
-The frequency of the sound is in kHz, and the length is in ms. **[wedo only]**
+**[boost only]** Set the motor position in degrees with a set speed. If the motor is connected, it will run to the exact position in degrees.
+
+~~~~js
+wedoBoostPoweredUp.setMotorDegrees(degree, speed, port, uuid);
+~~~~
+
+
+**[wedo only]** Play a sound on the build-in piezo speaker.
+The frequency of the sound is in kHz, and the length is in ms.
 
 
 ~~~~js
