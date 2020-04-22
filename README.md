@@ -128,7 +128,7 @@ If a tacho Motor is connected, it will emit exact rotation angles and rotation c
 
 ~~~~js
 hub.on('motor', function (motorRotation, port, uuid) {
-    console.log('rotation angle: '+ motorRotation.rotationAngle +', rotation count: '+ motorRotation.rotationCount + ' at port '+port + ' @ '+uuid);
+    console.log('rotation angle: '+ motorRotation.rotationAngle +', rotation count: '+ motorRotation.rotationCount+', absolute degree: motorRotation.absoluteDeg'+ motorRotation.rotationCount + ' at port '+port + ' @ '+uuid);
 });
 ~~~~
 
