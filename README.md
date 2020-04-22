@@ -167,7 +167,7 @@ hub.setMotor(speed, (optionl) port, (optional) uuid);
 **[boost only]** Set the motor position in degrees with a set speed. If the motor is connected, it will run to the exact position in degrees.
 
 ~~~~js
-wedoBoostPoweredUp.setMotorDegrees(degree, speed, port, uuid);
+hub.setMotorDegrees(degree, speed, port, uuid);
 ~~~~
 
 
