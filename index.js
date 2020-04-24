@@ -957,8 +957,8 @@ WedoBoostPoweredUp.prototype.setMotorAccelelerationProfile = function (acctime, 
 	let dectimeArray = this.numberTo4ByteArray(dectime);
 	console.log(acctimeArray)
 	console.log(dectimeArray)
-	this.writeTo(uuid, this.poweredUpHub, Buffer([0x08, 0x00, 0x81,port,0x10,0x05, acctimeArray[0], acctimeArray[1], 0x00]), function () {});
-	this.writeTo(uuid, this.poweredUpHub, Buffer([0x08, 0x00, 0x81,port,0x10,0x06, dectimeArray[0], dectimeArray[1], 0x00]), function () {});
+	this.writeTo(uuid, this.poweredUpHub, Buffer([0x08, 0x00, 0x81,port,0x10,0x05, acctimeArray[0], acctimeArray[1], 0x01]), function () {});
+	this.writeTo(uuid, this.poweredUpHub, Buffer([0x08, 0x00, 0x81,port,0x10,0x06, dectimeArray[0], dectimeArray[1], 0x01]), function () {});
 
 
 };
