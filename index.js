@@ -61,6 +61,8 @@ function Port() {
 	this.motorDegree = null;
 	this.newMotorDegree = null;
 	this.oldMotorDegree = null;
+	this.absolutDegree = false;
+	this.callback = null;
 
 }
 
@@ -470,6 +472,16 @@ if(thisDeviceType === "wedo") {
 
 
 
+
+			}else if (messageType === 0x82){
+				if(data[4] === 0x0a){
+					if(this.wedoBoostPoweredUp[uuid].port[thisPort.byte].type === "motor"){
+						if(typeof(this.wedoBoostPoweredUp[uuid].port[thisPort.byte].callback) === "function") {
+							this.wedoBoostPoweredUp[uuid].port[thisPort.byte].callback();
+							this.wedoBoostPoweredUp[uuid].port[thisPort.byte].callback = null;
+						}
+					}
+				}
 			} else if (messageType === 0x01 && data [3] === 0x02 && data[4] === 0x06) {
 				this.emit('button', data[data.length - 1], uuid);
 			} else if (messageType === 0x01 && data [3] === 0x06 && data[4] === 0x06) {
@@ -857,8 +869,7 @@ WedoBoostPoweredUp.prototype.setMotor = function (speed, port, uuid) {
 };
 
 
-WedoBoostPoweredUp.prototype.setMotorDegrees = function (degree, speed, port, uuid) {
-	let callback = null; // some idea for later
+WedoBoostPoweredUp.prototype.setMotorDegrees = function (degree, speed, port, uuid, callback) {
 	uuid = this.getUuidFromInput(uuid);
 	if (uuid != null && this.wedoBoostPoweredUp[uuid]) {
 		if (typeof port === "undefined") {
@@ -866,7 +877,7 @@ WedoBoostPoweredUp.prototype.setMotorDegrees = function (degree, speed, port, uu
 		}
 
 		let thisMotor = this.wedoBoostPoweredUp[uuid].port[port];
-
+		thisMotor.absolutDegree = false;
 		if(!thisMotor) return;
 		thisMotor.runMotor = null;
 		if (port !== null) {
@@ -888,15 +899,69 @@ WedoBoostPoweredUp.prototype.setMotorDegrees = function (degree, speed, port, uu
 		}
 
 		if (thisMotor.runMotor !== null) {
-
 				thisMotor.motorDegree = degree;
 				thisMotor.motorResult = speed;
-				thisMotor.motorCallback = callback;
+				if(typeof(callback) === "function") {
+					thisMotor.callback = callback;
+				}
 		}
 		//console.log(thisMotor);
 	}
 };
 
+WedoBoostPoweredUp.prototype.setAbsolutMotorDegrees = function (absolutDegree, speed, port, uuid, callback) {
+	uuid = this.getUuidFromInput(uuid);
+	if (uuid != null && this.wedoBoostPoweredUp[uuid]) {
+		if (typeof port === "undefined") {
+			port = null;
+		}
+
+		let thisMotor = this.wedoBoostPoweredUp[uuid].port[port];
+		thisMotor.absolutDegree = true;
+		if(!thisMotor) return;
+		thisMotor.runMotor = null;
+		if (port !== null) {
+			if (thisMotor.type === "motor") {
+				//this.wedoBoostPoweredUp[uuid].runMotor = port;
+				thisMotor.runMotor = port;
+			}
+		}
+
+		if(thisMotor.motorDegree === null){
+			// Set motor into the degree mode!
+			if(port === null) return;
+			if(this.wedoBoostPoweredUp[uuid].deviceType === "wedo") return;
+			this.writePortDefinitionToBoost(uuid, port, 0x0D,framerate, function () {
+				//this.writeTo(uuid, this.poweredUpHub, Buffer([0x0A, 0x00, 0x81, 0x32, 0x11, 0x51, 0x01, R, G, B]), function () {
+				console.log("activated tacho Motor in degree mode on port " + port.byte + " @ " + uuid);
+			}.bind(this, uuid));
+
+		}
+
+		if (thisMotor.runMotor !== null) {
+			thisMotor.motorDegree = absolutDegree;
+			thisMotor.motorResult = speed;
+			if(typeof(callback) === "function") {
+				thisMotor.callback = callback;
+			}
+		}
+		//console.log(thisMotor);
+	}
+};
+
+
+
+WedoBoostPoweredUp.prototype.setMotorAccelelerationProfile = function (acctime, dectime, port, uuid) {
+	if(this.wedoBoostPoweredUp[uuid].deviceType === "wedo") return;
+	let acctimeArray = this.numberTo4ByteArray(acctime);
+	let dectimeArray = this.numberTo4ByteArray(dectime);
+	console.log(acctimeArray)
+	console.log(dectimeArray)
+	this.writeTo(uuid, this.poweredUpHub, Buffer([0x08, 0x00, 0x81,port,0x10,0x05, acctimeArray[0], acctimeArray[1], 0x01]), function () {});
+	this.writeTo(uuid, this.poweredUpHub, Buffer([0x08, 0x00, 0x81,port,0x10,0x06, dectimeArray[0], dectimeArray[1], 0x01]), function () {});
+
+
+};
 
 WedoBoostPoweredUp.prototype.pingMotor = function (uuid) {
 	var self = this;
@@ -924,10 +989,16 @@ WedoBoostPoweredUp.prototype.pingMotor = function (uuid) {
 									if(thisMotor.motorDegree === null) {
 										this.writeTo(uuid, this.poweredUpHub, Buffer([0x07, 0x00, 0x81, key, 0x11, 0x07, parseInt(thisMotor.motorResult)]), function () {
 										});
-									} else {
+									} else{
 										let motorbytes = this.numberTo4ByteArray(thisMotor.motorDegree);
-										let thisBuffer = Buffer([0x07, 0x00, 0x81, key, 0x11, 0x0B, motorbytes[0],motorbytes[1],motorbytes[2],motorbytes[3], parseInt(thisMotor.motorResult), 100, 127, 1]);
-	/**/								this.writeTo(uuid, this.poweredUpHub, thisBuffer, function () {
+										console.log(parseInt(thisMotor.motorResult));
+										let thisBuffer = [];
+										if(thisMotor.absolutDegree === false)
+											 thisBuffer = Buffer([0x0D, 0x00, 0x81, key, 0x11, 0x0B, motorbytes[0],motorbytes[1],motorbytes[2],motorbytes[3], parseInt(thisMotor.motorResult), 100, 127, 0x11]);
+										else
+											 thisBuffer = Buffer([0x0D, 0x00, 0x81, key, 0x11, 0x0D, motorbytes[0],motorbytes[1],motorbytes[2],motorbytes[3], parseInt(thisMotor.motorResult), 100, 127, 0x11]);
+
+										this.writeTo(uuid, this.poweredUpHub, thisBuffer, function () {
 											thisMotor.motorCallback;
 										});
 									}
