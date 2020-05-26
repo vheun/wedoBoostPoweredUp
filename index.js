@@ -134,9 +134,9 @@ WedoBoostPoweredUp.prototype.connect = function (nameSpace, callback) {
 	this.cout('Device Connect');
 
 	this.ble.on('discover', function (nameSpace, peripheral) {
-
 		let device = this.isWedoBoostPoweredUpPeripheral(nameSpace, peripheral);
-		if (device && peripheral.addressType === "public") {
+		if (device && peripheral.addressType) {
+			//console.log("what type +++++++++++++++", peripheral.addressType);
 			if (!this.wedoBoostPoweredUp[peripheral.uuid]) {
 				this.wedoBoostPoweredUp[peripheral.uuid] = new Device();
 				this.wedoBoostPoweredUp[peripheral.uuid].deviceType = device;
@@ -342,8 +342,6 @@ if(thisDeviceType === "wedo") {
 
 	if(thisDeviceType === "poweredUp") {
 		this.getCharacteristic(uuid, this.poweredUpHub).on('data', function (uuid, data, isNotification) {
-
-
 			let messageType = data[2];
 			let portID = data[3];
 			let isPortConnected = data[4];
