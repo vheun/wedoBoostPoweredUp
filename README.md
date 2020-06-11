@@ -2,6 +2,7 @@
 
 This is a node.js module for the Lego WeDo 2.0 and Lego Boost set.
 
++ Version 2.1.4 Updates to noble and issues with Boost discovery
 + Version 2.1.2 You can now set motor degrees for Boost via ```setMotorDegrees```, absolut degrees via ```setAbsolutMotorDegrees``` and set acceleration profiles.
 + Version 2.0.2 Renamed library. If you used ```wedo2``` before, just change the require from ````wedo2```` to  ```wedoboostpoweredup```.
 + Version 2.0.0 Supports the Lego Boost and other Lego connected Hub devices additionally to the wedo2.
