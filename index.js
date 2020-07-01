@@ -135,8 +135,11 @@ WedoBoostPoweredUp.prototype.connect = function (nameSpace, callback) {
 
 	this.ble.on('discover', function (nameSpace, peripheral) {
 		let device = this.isWedoBoostPoweredUpPeripheral(nameSpace, peripheral);
-		if ((device === "wedo") || (device && peripheral.addressType !== "unknown"))
-		//console.log("what type +++++++++++++++", peripheral.addressType);
+		if ((device === "wedo"&& peripheral.addressType !== "public") || (device && peripheral.addressType !== "unknown"))
+		{
+			// it looks like that the device requires some ms to initialize all parameters into the peripheral object
+			setTimeout(function () {
+
 			if (!this.wedoBoostPoweredUp[peripheral.uuid]) {
 				this.wedoBoostPoweredUp[peripheral.uuid] = new Device();
 				this.wedoBoostPoweredUp[peripheral.uuid].deviceType = device;
@@ -144,8 +147,13 @@ WedoBoostPoweredUp.prototype.connect = function (nameSpace, callback) {
 				this.wedoBoostPoweredUp[peripheral.uuid].uuid = peripheral.uuid;
 				this.wedoBoostPoweredUp[peripheral.uuid].peripheral = peripheral;
 
-				if(device === "wedo")
-					this.cout('Found the following Lego Wedo 2.0: ' + peripheral.advertisement.localName + ' with UUID ' + peripheral.uuid);
+				console.log(peripheral.advertisement.localName)
+
+
+					if(device === "wedo")
+						console.log('Found the following Lego Wedo 2.0: ' + peripheral.advertisement.localName + ' with UUID ' + peripheral.uuid);
+
+
 
 				this.connectPeripheral(peripheral.uuid, function (uuid){
 
@@ -153,6 +161,11 @@ WedoBoostPoweredUp.prototype.connect = function (nameSpace, callback) {
 
 				}.bind(this,peripheral.uuid));
 			}
+
+			}.bind(this,peripheral.uuid),10);
+
+
+
 		}
 	}.bind(this, nameSpace));
 
@@ -873,6 +886,7 @@ WedoBoostPoweredUp.prototype.setMotorDegrees = function (degree, speed, port, uu
 		if (typeof port === "undefined") {
 			port = null;
 		}
+if(!this.wedoBoostPoweredUp[uuid].port[port]) return;
 
 		let thisMotor = this.wedoBoostPoweredUp[uuid].port[port];
 		thisMotor.absolutDegree = false;
