@@ -133,7 +133,7 @@ WedoBoostPoweredUp.prototype.connect = function (nameSpace, callback) {
     this.cout('Device Connect');
     this.ble.on('discover', function (nameSpace, peripheral) {
         let device = this.isWedoBoostPoweredUpPeripheral(nameSpace, peripheral);
-        if ((device && peripheral.address !== "00-00-00-00-00-00")) {
+        if ((device && peripheral.address && peripheral.address !== "00-00-00-00-00-00")) {
             if (!this.wedoBoostPoweredUp[peripheral.uuid]) {
                 this.wedoBoostPoweredUp[peripheral.uuid] = new Device();
                 this.wedoBoostPoweredUp[peripheral.uuid].deviceType = device;
