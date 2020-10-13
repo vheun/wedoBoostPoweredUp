@@ -1,10 +1,8 @@
-# Wedo 2.0, Boost & Power Up
+# Wedo 2.0, Boost & PoweredUp
 
 This is a node.js module for the Lego WeDo 2.0 and Lego Boost set.
 
-+ Version 2.1.7 Finally got the Boost connection right
-+ Version 2.1.5 Updates to noble and issues with Boost discovery
-+ Version 2.1.2 You can now set motor degrees for Boost via ```setMotorDegrees```, absolut degrees via ```setAbsolutMotorDegrees``` and set acceleration profiles.
++ Version 2.1.9 Lego Technic Hub support
 + Version 2.0.2 Renamed library. If you used ```wedo2``` before, just change the require from ````wedo2```` to  ```wedoboostpoweredup```.
 + Version 2.0.0 Supports the Lego Boost and other Lego connected Hub devices additionally to the wedo2.
 + Version 1.6.x For compatibility, this version switched dependencies from noble to abandonware/noble.
@@ -166,13 +164,13 @@ Set the port to ```null``` to leave it blank in case you want to set the device.
 hub.setMotor(speed, (optionl) port, (optional) uuid);
 ~~~~
 
-**[boost only]** Set the motor position in degrees with a set speed. If the motor is connected, it will execute the amount of degrees.
+**[not for Wedo]** Set the motor position in degrees with a set speed. If the motor is connected, it will execute the amount of degrees.
 
 ~~~~js
 wedoBoostPoweredUp.setMotorDegrees(degree, speed, port, uuid, callback);
 ~~~~
 
-**[boost only]** Set the motor position in degrees with a set speed. If the motor is connected, it will run to the exact position in degrees.
+**[not for Wedo]** Set the motor position in degrees with a set speed. If the motor is connected, it will run to the exact position in degrees.
 
 ~~~~js
 wedoBoostPoweredUp.setAbsolutMotorDegrees(absolutDegree, speed, port, uuid, callback);
@@ -180,7 +178,7 @@ wedoBoostPoweredUp.setAbsolutMotorDegrees(absolutDegree, speed, port, uuid, call
 
 
 
-**[boost only]** Set acceleration (in ms) and deceleration speed (-100 ~ 100). This profile will persist in the boost until changed again.
+**[not for Wedo]** Set acceleration (in ms) and deceleration speed (-100 ~ 100). This profile will persist in the boost until changed again.
 
 ~~~~js
 wedoBoostPoweredUp.setMotorAccelelerationProfile(accelerationTime, decelerationTime, port, uuid);
