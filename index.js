@@ -132,8 +132,11 @@ util.inherits(WedoBoostPoweredUp, EventEmitter);
 WedoBoostPoweredUp.prototype.connect = function (nameSpace, callback) {
     this.cout('Device Connect');
     this.ble.on('discover', function (nameSpace, peripheral) {
+
         let device = this.isWedoBoostPoweredUpPeripheral(nameSpace, peripheral);
-        if ((device && peripheral.address && peripheral.address !== "00-00-00-00-00-00")) {
+
+
+        if ((device && (peripheral.address || device === "technicHub") && peripheral.address !== "00-00-00-00-00-00")) {
             if (!this.wedoBoostPoweredUp[peripheral.uuid]) {
                 this.wedoBoostPoweredUp[peripheral.uuid] = new Device();
                 this.wedoBoostPoweredUp[peripheral.uuid].deviceType = device;
@@ -180,29 +183,39 @@ WedoBoostPoweredUp.prototype.isWedoBoostPoweredUpPeripheral = function (nameSpac
         return false;
     }
     let deviceType = null;
+    //console.log(peripheral);
     var localName = peripheral.advertisement.localName;
     var manufacturer = peripheral.advertisement.serviceUuids;
 
     var weDoServiceID = "000015231212efde1523785feabcd123";
     var poweredUpServiceID = "000016231212efde1623785feabcd123";
-    var name = "LPF2 Hub I/O";
 
-    var localNameMatch = localName && localName.indexOf(name) === 0;
+    var name = "LPF2 Hub I/O";
+    var technicName = "Technic Hub";
+
+    var localNameMatch = localName && (localName.indexOf(name) === 0 || localName.indexOf(technicName) === 0);
     var manufacturerMatchWedo = manufacturer && manufacturer.indexOf(weDoServiceID) === 0;
     var manufacturerMatchBoost = manufacturer && manufacturer.indexOf(poweredUpServiceID) === 0;
+
 
     // look for a specific string in the name
     if (nameSpace) {
         manufacturerMatchWedo = false;
         manufacturerMatchBoost = false;
-        localNameMatch = localName && localName.indexOf(nameSpace) !== -1;
+        localNameMatch = localName && (localName.indexOf(nameSpace) !== -1 || localName.indexOf(technicName) !== -1);
     }
 
     if (manufacturerMatchWedo) {
         deviceType = "wedo"
     } else if (manufacturerMatchBoost) {
+        if(localName && localName.indexOf(technicName) === 0)
+            deviceType = "technicHub"
+        else
         deviceType = "poweredUp"
     }
+    /*else if (manufacturerMatchTechnic) {
+        deviceType = "technicHub"
+    }*/
 
     if (localNameMatch || deviceType) {
         return deviceType;
@@ -232,7 +245,7 @@ WedoBoostPoweredUp.prototype.setup = function (uuid, callback) {
             this.wedoBoostPoweredUp[uuid].services = services;
             this.wedoBoostPoweredUp[uuid].characteristics = characteristics;
 
-            if (this.wedoBoostPoweredUp[uuid].deviceType === "poweredUp") {
+            if (this.wedoBoostPoweredUp[uuid].deviceType === "poweredUp" || this.wedoBoostPoweredUp[uuid].deviceType === "technicHub" ) {
                 // activate Button
                 this.writeTo(uuid, "1624", Buffer([0x05, 0x00, 0x01, 0x02, 0x02]), function () {
                 });
@@ -264,7 +277,7 @@ WedoBoostPoweredUp.prototype.connectPeripheral = function (uuid, callback) {
             this.wedoBoostPoweredUp[uuid].name = this.wedoBoostPoweredUp[uuid].peripheral.advertisement.localName;
             if (this.wedoBoostPoweredUp[uuid].deviceType === "wedo")
                 console.log('Found the following Lego Wedo 2.0: ' + this.wedoBoostPoweredUp[uuid].peripheral.advertisement.localName + ' with UUID ' + uuid);
-            if (this.wedoBoostPoweredUp[uuid].deviceType === "poweredUp") {
+            if (this.wedoBoostPoweredUp[uuid].deviceType === "poweredUp" || this.wedoBoostPoweredUp[uuid].deviceType === "technicHub") {
                 this.wedoBoostPoweredUp[uuid].name = this.wedoBoostPoweredUp[uuid].peripheral.advertisement.localName;
                 this.cout('Found the following Lego Move Hub: ' + this.wedoBoostPoweredUp[uuid].name + ' with UUID ' + uuid);
             }
@@ -305,7 +318,7 @@ WedoBoostPoweredUp.prototype.handshake = function (uuid, callback, deviceType) {
             this.portType, this.lowVoltageAlert,
             this.highCurrentAlert, this.lowSignalAlert,
             this.sensorValue, this.valueformat, this.poweredUpHub];
-    } else if (deviceType === "poweredUp") {
+    } else if (deviceType === "poweredUp" || deviceType === "technicHub") {
         listOfNotificationCharacteristics = [this.poweredUpHub];
     }
 
@@ -325,7 +338,7 @@ WedoBoostPoweredUp.prototype.handshake = function (uuid, callback, deviceType) {
         this.writePortDefinition(uuid, 0x06, 0x17, 0x01, 0x02, function () {
             //console.log("have set RGB for LED");
         }.bind(this));
-    } else if (thisDeviceType === "poweredUp") {
+    } else if (thisDeviceType === "poweredUp" || thisDeviceType === "technicHub") {
         // set LED lights to rgb values
         /*this.writePortDefinitionToBoost(uuid, 0x08,  0x01,framerate, function () {
                 console.log("have set RGB for LED");
@@ -334,7 +347,7 @@ WedoBoostPoweredUp.prototype.handshake = function (uuid, callback, deviceType) {
     ;
 
 
-    if (thisDeviceType === "poweredUp") {
+    if (thisDeviceType === "poweredUp" || thisDeviceType === "technicHub") {
         this.getCharacteristic(uuid, this.poweredUpHub).on('data', function (uuid, data, isNotification) {
             let messageType = data[2];
             let portID = data[3];
@@ -352,6 +365,9 @@ WedoBoostPoweredUp.prototype.handshake = function (uuid, callback, deviceType) {
                 console.log(data);}*/
 
             //check for Ports signal
+
+           // console.log(data);
+
             if (messageType === 0x04) {
                 if (thisPort.byte === 57) return;
                 thisPort.connected = isPortConnected;
@@ -391,7 +407,7 @@ WedoBoostPoweredUp.prototype.handshake = function (uuid, callback, deviceType) {
                         /*this.writePortDefinitionToBoost(uuid,thisPort.byte, 0x05, framerate, function () {
                             console.log("activated Button on port " + thisPort.byte + " @ " + uuid);
                         });*/
-                    } else if (connectedDevice === 0x26 || connectedDevice === 0x27) {
+                    } else if (connectedDevice === 0x26 || connectedDevice === 0x27 || connectedDevice === 0x2e || connectedDevice === 0x2f) {
                         thisPort.type = "motor";
                         this.writePortDefinitionToBoost(uuid, thisPort.byte, 0x02, framerate, function () {
                             //this.writeTo(uuid, this.poweredUpHub, Buffer([0x0A, 0x00, 0x81, 0x32, 0x11, 0x51, 0x01, R, G, B]), function () {
@@ -722,7 +738,7 @@ WedoBoostPoweredUp.prototype.getDeviceName = function (callback, uuid) {
             this.getCharacteristic(uuid, this.nameID).read(function (e, b) {
                 this(b.toString(), uuid);
             }.bind(callback), uuid);
-        } else if (this.wedoBoostPoweredUp[uuid].deviceType === "poweredUp") {
+        } else if (this.wedoBoostPoweredUp[uuid].deviceType === "poweredUp" || this.wedoBoostPoweredUp[uuid].deviceType === "technicHub") {
 
             callback(this.wedoBoostPoweredUp[uuid].name, uuid);
         }
@@ -740,7 +756,7 @@ WedoBoostPoweredUp.prototype.setDeviceName = function (name, uuid) {
             this.writeTo(uuid, this.nameID, Buffer(name), function () {
             });
         }
-    } else if (thisDeviceType === "poweredUp") {
+    } else if (thisDeviceType === "poweredUp" || thisDeviceType === "technicHub") {
         setTimeout(function (name, uuid) {
             let size = Buffer(name).length + 5;
             let sendMessage = [this.numberTo4ByteArray(size)[0], 0x00, 0x01, 0x01, 0x01]
@@ -771,7 +787,7 @@ WedoBoostPoweredUp.prototype.setLedColor = function (R, G, B, uuid) {
             this.writeTo(uuid, "1565", Buffer([0x06, 0x04, 0x03, R, G, B]), function () {
             });
         }
-    } else if (thisDeviceType === "poweredUp") {
+    } else if (thisDeviceType === "poweredUp" || thisDeviceType === "technicHub") {
         if (uuid != null && this.wedoBoostPoweredUp[uuid]) {
             console.log("setRGB LED");
             // -------!
@@ -786,7 +802,7 @@ WedoBoostPoweredUp.prototype.setLedColor = function (R, G, B, uuid) {
 WedoBoostPoweredUp.prototype.setSound = function (frequency, length, uuid) {
     uuid = this.getUuidFromInput(uuid);
     if (uuid != null && this.wedoBoostPoweredUp[uuid]) {
-        if (this.wedoBoostPoweredUp[uuid].deviceType === "poweredUp") return;
+        if (this.wedoBoostPoweredUp[uuid].deviceType === "poweredUp" || this.wedoBoostPoweredUp[uuid].deviceType === "technicHub") return;
         this.writeTo(uuid, "1565", Buffer([0x05, 0x02, 0x04,
             this.longToByteArray(frequency)[0], this.longToByteArray(frequency)[1],
             this.longToByteArray(length)[0], this.longToByteArray(length)[1]]), function () {
@@ -975,7 +991,7 @@ WedoBoostPoweredUp.prototype.pingMotor = function (uuid) {
                                         this.writeTo(uuid, "1565", Buffer([key, 0x01, 0x02, parseInt(thisMotor.motorResult)]), function () {
                                         });
 
-                                    } else if (this.wedoBoostPoweredUp[uuid].deviceType === "poweredUp") {
+                                    } else if (this.wedoBoostPoweredUp[uuid].deviceType === "poweredUp" || this.wedoBoostPoweredUp[uuid].deviceType === "technicHub") {
                                         if (thisMotor.motorDegree === null) {
                                             this.writeTo(uuid, this.poweredUpHub, Buffer([0x07, 0x00, 0x81, key, 0x11, 0x07, parseInt(thisMotor.motorResult)]), function () {
                                             });
