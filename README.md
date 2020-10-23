@@ -2,6 +2,7 @@
 
 This is a node.js module for the Lego WeDo 2.0 and Lego Boost set.
 
++ Version 2.1.10 Lego City Train Handset support
 + Version 2.1.9 Lego Technic Hub support
 + Version 2.0.2 Renamed library. If you used ```wedo2``` before, just change the require from ````wedo2```` to  ```wedoboostpoweredup```.
 + Version 2.0.0 Supports the Lego Boost and other Lego connected Hub devices additionally to the wedo2.
@@ -98,6 +99,23 @@ If the device button on the controller is clicked, the following event is fired.
 ~~~~js
 hub.on('button', function (button, uuid) {
     console.log('button state: '+button + ' @ '+ uuid );
+});
+~~~~
+
+**[Handset]** Joypad button click event
+
+~~~~js
+hub.on('joypad', function (value, port, uuid) {
+    console.log('joypad state: '+value+' on port '+port+ ' @ '+ uuid );
+});
+~~~~
+
+
+**[Handset]** Stop button click event
+
+~~~~js
+hub.on('stop', function (value, port, uuid) {
+    console.log('stop state: '+value+' on port '+port+ ' @ '+ uuid );
 });
 ~~~~
 
